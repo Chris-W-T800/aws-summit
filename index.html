@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>AWS Summit Sydney — Chris</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap');
+:root {
+  --o:#FF9900;--o2:#ffb733;--dark:#070d18;--navy:#0f1825;--mid:#192638;
+  --panel:#1e2f45;--border:#253d58;--tp:#eef3ff;--ts:#7a9ab8;--tm:#3d5a78;
+  --teal:#00d4b8;--blue:#4a9eff;--green:#27c97a;--red:#e05252;--purple:#a78bfa;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html{font-size:15px;}
+body{font-family:'DM Sans',sans-serif;background:var(--dark);color:var(--tp);min-height:100vh;overflow-x:hidden;}
+
+/* HEADER */
+.hdr{background:var(--navy);border-bottom:2px solid var(--o);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;}
+.hdr-l{display:flex;align-items:center;gap:10px;}
+.badge{background:var(--o);color:#000;font-family:'Syne',sans-serif;font-weight:800;font-size:10px;padding:3px 7px;border-radius:3px;letter-spacing:.06em;}
+.htitle{font-family:'Syne',sans-serif;font-weight:700;font-size:16px;}
+.htitle em{color:var(--o);font-style:normal;}
+.daytog{display:flex;background:var(--mid);border-radius:7px;padding:3px;gap:2px;}
+.dbtn{padding:5px 13px;border-radius:5px;border:none;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;background:transparent;color:var(--ts);}
+.dbtn.on{background:var(--o);color:#000;font-weight:700;}
+
+/* TABS */
+.tabs{display:flex;background:var(--navy);border-bottom:1px solid var(--border);padding:0 16px;overflow-x:auto;gap:0;scrollbar-width:none;}
+.tabs::-webkit-scrollbar{display:none;}
+.tbtn{padding:11px 16px;border:none;background:transparent;color:var(--tm);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all .2s;}
+.tbtn.on{color:var(--o);border-bottom-color:var(--o);}
+
+/* MAIN */
+.main{padding:16px;max-width:820px;margin:0 auto;}
+.tc{display:none;}.tc.on{display:block;}
+
+/* SESSION LIST */
+.slabel{font-family:'Syne',sans-serif;font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--tm);margin:20px 0 10px;display:flex;align-items:center;gap:10px;}
+.slabel::after{content:'';flex:1;height:1px;background:var(--border);}
+.slabel:first-child{margin-top:0;}
+.slist{display:flex;flex-direction:column;gap:6px;}
+
+/* SESSION CARD */
+.scard{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;display:flex;align-items:flex-start;gap:10px;position:relative;overflow:hidden;transition:border-color .2s,transform .15s;}
+.scard::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;transition:background .2s;}
+.scard:active{transform:scale(.99);}
+.scard.p-essential::before{background:rgba(255,153,0,.4);}
+.scard.p-high::before{background:rgba(74,158,255,.4);}
+.scard.p-medium::before{background:rgba(167,139,250,.4);}
+.scard.p-flexible::before{background:var(--border);}
+.scard.has-notes{border-color:rgba(39,201,122,.35);}
+.scard.has-notes::before{background:var(--green)!important;}
+.scard.open{border-color:var(--teal);}
+.scard.open::before{background:var(--teal)!important;}
+.scard.is-alt{background:rgba(255,255,255,.02);border-style:dashed;}
+
+.stime{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--o);min-width:70px;padding-top:1px;flex-shrink:0;}
+.sinfo{flex:1;min-width:0;}
+.scode{font-size:10px;color:var(--tm);font-weight:600;letter-spacing:.05em;margin-bottom:3px;}
+.sname{font-size:13px;font-weight:500;color:var(--tp);line-height:1.4;}
+.sname.alt-name{color:var(--ts);font-style:italic;font-size:12px;}
+.smeta{display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap;}
+.stag{padding:2px 6px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;}
+.t-key{color:var(--o);background:rgba(255,153,0,.1);border:1px solid rgba(255,153,0,.2);}
+.t-ai{color:var(--purple);background:rgba(167,139,250,.1);}
+.t-arc{color:var(--teal);background:rgba(0,212,184,.1);}
+.t-wkp{color:#fb923c;background:rgba(251,146,60,.1);}
+.t-prt{color:var(--blue);background:rgba(74,158,255,.1);}
+.t-net{color:var(--green);background:rgba(39,201,122,.1);}
+.t-fin{color:#fbbf24;background:rgba(251,191,36,.1);}
+.t-ind{color:#6ee7b7;background:rgba(110,231,183,.1);}
+.sloc{font-size:11px;color:var(--tm);}
+.sdot{width:7px;height:7px;border-radius:50%;background:var(--border);flex-shrink:0;margin-top:4px;transition:all .2s;}
+.sdot.saved{background:var(--green);box-shadow:0 0 5px rgba(39,201,122,.5);}
+
+/* PRIORITY BADGES */
+.pbadge{font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;letter-spacing:.04em;}
+.pb-e{color:#000;background:var(--o);}
+.pb-h{color:var(--blue);background:rgba(74,158,255,.15);}
+.pb-m{color:var(--purple);background:rgba(167,139,250,.15);}
+.pb-f{color:var(--ts);background:rgba(255,255,255,.05);}
+
+/* EDITOR */
+.editor{background:var(--navy);border:1px solid var(--teal);border-radius:10px;margin-top:5px;overflow:hidden;animation:sd .2s ease;}
+@keyframes sd{from{opacity:0;transform:translateY(-5px);}to{opacity:1;transform:translateY(0);}}
+.eh{background:linear-gradient(90deg,rgba(0,212,184,.07),transparent);padding:11px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.ename{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--teal);}
+.ecls{width:24px;height:24px;border-radius:50%;border:1px solid var(--border);background:transparent;color:var(--tm);cursor:pointer;font-size:15px;line-height:1;transition:all .2s;display:flex;align-items:center;justify-content:center;}
+.ecls:hover{border-color:var(--red);color:var(--red);}
+.ebody{padding:14px;display:flex;flex-direction:column;gap:14px;}
+.flabel{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--tm);margin-bottom:7px;}
+.fgrp{display:flex;flex-direction:column;}
+
+/* STARS */
+.stars{display:flex;gap:4px;}
+.star{font-size:22px;cursor:pointer;color:var(--border);transition:all .15s;line-height:1;}
+.star.on{color:var(--o);}
+
+/* CHIPS */
+.chips{display:flex;flex-wrap:wrap;gap:5px;}
+.chip{padding:5px 11px;border-radius:16px;border:1px solid var(--border);background:var(--mid);font-size:12px;color:var(--ts);cursor:pointer;transition:all .15px;user-select:none;}
+.chip.on{background:rgba(255,153,0,.1);border-color:var(--o);color:var(--o);}
+
+/* TAKEAWAYS */
+.tklist{display:flex;flex-direction:column;gap:6px;}
+.tkrow{display:flex;align-items:flex-start;gap:8px;}
+.tkn{width:19px;height:19px;border-radius:50%;background:var(--mid);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--tm);flex-shrink:0;margin-top:9px;}
+.tki{flex:1;background:var(--mid);border:1px solid var(--border);border-radius:7px;padding:8px 11px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--tp);resize:none;min-height:36px;line-height:1.5;transition:border-color .2s;width:100%;}
+.tki:focus{outline:none;border-color:var(--teal);}
+.tki::placeholder{color:var(--tm);}
+
+/* BRAIN DUMP */
+.bd{background:var(--mid);border:1px solid var(--border);border-radius:7px;padding:10px 12px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--tp);resize:vertical;min-height:70px;width:100%;line-height:1.6;transition:border-color .2s;}
+.bd:focus{outline:none;border-color:var(--teal);}
+.bd::placeholder{color:var(--tm);font-style:italic;}
+
+/* ACTIONS */
+.alist{display:flex;flex-direction:column;gap:6px;}
+.arow{display:flex;align-items:center;gap:7px;}
+.acb{width:15px;height:15px;accent-color:var(--o);cursor:pointer;flex-shrink:0;}
+.ai{flex:1;background:var(--mid);border:1px solid var(--border);border-radius:7px;padding:7px 11px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--tp);transition:border-color .2s;}
+.ai:focus{outline:none;border-color:var(--teal);}
+.ai::placeholder{color:var(--tm);}
+.addbtn{margin-top:5px;padding:6px 12px;background:transparent;border:1px dashed var(--border);border-radius:6px;color:var(--tm);font-size:12px;cursor:pointer;transition:all .2s;}
+.addbtn:hover{border-color:var(--o);color:var(--o);}
+.rmbtn{width:22px;height:22px;border-radius:50%;border:1px solid var(--border);background:transparent;color:var(--tm);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;}
+.rmbtn:hover{border-color:var(--red);color:var(--red);}
+
+/* SAVE BTN */
+.savebtn{background:var(--o);color:#000;border:none;border-radius:7px;padding:10px 20px;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;transition:all .2s;letter-spacing:.05em;}
+.savebtn:active{transform:scale(.97);}
+
+/* STAT ROW */
+.statrow{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.statpill{background:var(--mid);border:1px solid var(--border);border-radius:16px;padding:4px 12px;font-size:11px;color:var(--ts);display:flex;align-items:center;gap:4px;}
+.statpill b{color:var(--o);font-family:'Syne',sans-serif;}
+
+/* DAILY FEEL */
+.feelsec{background:linear-gradient(135deg,rgba(255,153,0,.04),rgba(0,212,184,.03));border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;}
+.feeltitle{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--o);margin-bottom:3px;}
+.feelsubt{font-size:12px;color:var(--tm);margin-bottom:14px;}
+.moodrow{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px;}
+.mbtn{padding:6px 12px;border-radius:16px;border:1px solid var(--border);background:var(--mid);color:var(--ts);font-size:12px;cursor:pointer;transition:all .15s;}
+.mbtn.on{border-color:var(--o);background:rgba(255,153,0,.1);color:var(--o);}
+
+/* CONTACTS */
+.cgrid{display:flex;flex-direction:column;gap:8px;}
+.ccard{background:var(--panel);border:1px solid var(--border);border-radius:9px;padding:12px 14px;display:flex;align-items:center;gap:12px;}
+.cav{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--o),#e07000);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:13px;color:#000;flex-shrink:0;}
+.cinfo{flex:1;min-width:0;}
+.cname{font-size:13px;font-weight:500;}
+.cdet{font-size:11px;color:var(--tm);margin-top:2px;}
+.cfu{font-size:11px;color:var(--teal);margin-top:3px;}
+.addcform{background:var(--panel);border:1px dashed var(--border);border-radius:10px;padding:14px;}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:9px;}
+.fi{background:var(--mid);border:1px solid var(--border);border-radius:7px;padding:8px 11px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--tp);width:100%;transition:border-color .2s;}
+.fi:focus{outline:none;border-color:var(--teal);}
+.fi::placeholder{color:var(--tm);}
+.full{grid-column:1/-1;}
+
+/* PANELS (EOD / LinkedIn) */
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px;}
+.ptitle{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--tp);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.ptitle::after{content:'';flex:1;height:1px;background:var(--border);}
+.psubt{font-size:12px;color:var(--ts);margin-bottom:14px;line-height:1.6;}
+.genbtn{width:100%;background:linear-gradient(135deg,var(--navy),var(--mid));border:1px solid var(--o);color:var(--o);border-radius:9px;padding:12px;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;transition:all .2s;letter-spacing:.04em;display:flex;align-items:center;justify-content:center;gap:8px;}
+.genbtn:hover{background:rgba(255,153,0,.07);}
+.outarea{background:var(--mid);border:1px solid var(--border);border-radius:7px;padding:14px;font-size:13px;line-height:1.7;color:var(--tp);white-space:pre-wrap;margin-top:12px;display:none;}
+.outarea.show{display:block;animation:fi .3s ease;}
+@keyframes fi{from{opacity:0;}to{opacity:1;}}
+.cpbtn{margin-top:8px;padding:7px 15px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--ts);font-size:12px;cursor:pointer;transition:all .2s;display:none;}
+.cpbtn.show{display:inline-block;}
+.cpbtn:hover{border-color:var(--teal);color:var(--teal);}
+
+/* SEND TO CLAUDE */
+.stc-wrap{background:linear-gradient(135deg,rgba(0,212,184,.06),rgba(255,153,0,.04));border:1px solid rgba(0,212,184,.25);border-radius:12px;padding:16px;margin-bottom:16px;}
+.stc-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--teal);margin-bottom:6px;}
+.stc-sub{font-size:12px;color:var(--tm);margin-bottom:12px;line-height:1.5;}
+.stcbtn{background:var(--teal);color:#000;border:none;border-radius:8px;padding:11px 20px;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;transition:all .2s;letter-spacing:.04em;width:100%;}
+.stcbtn:hover{background:#00eed0;}
+.stcbtn:active{transform:scale(.98);}
+
+/* DOTS LOADER */
+.dots{display:inline-flex;gap:4px;align-items:center;}
+.dots span{width:4px;height:4px;border-radius:50%;background:var(--o);animation:bounce 1.2s infinite;}
+.dots span:nth-child(2){animation-delay:.2s;}
+.dots span:nth-child(3){animation-delay:.4s;}
+@keyframes bounce{0%,80%,100%{transform:scale(.6);opacity:.4;}40%{transform:scale(1);opacity:1;}}
+
+/* EMPTY STATE */
+.empty{text-align:center;padding:30px 20px;color:var(--tm);font-size:12px;line-height:1.6;}
+.emptyicon{font-size:28px;margin-bottom:8px;opacity:.4;}
+
+/* STORAGE STATUS */
+.sstatus{font-size:10px;color:var(--tm);text-align:right;padding:4px 16px 0;font-family:'Syne',sans-serif;letter-spacing:.04em;}
+.sstatus.ok{color:rgba(39,201,122,.6);}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-track{background:var(--dark);}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+
+/* INLINE INPUTS */
+.inrow{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px;}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-l">
+    <div class="badge">AWS</div>
+    <div class="htitle">Summit <em>Sydney</em> · Chris</div>
+  </div>
+  <div class="daytog">
+    <button class="dbtn on" onclick="switchDay(1)">Day 1</button>
+    <button class="dbtn" onclick="switchDay(2)">Day 2</button>
+  </div>
+</div>
+<div class="sstatus" id="sstatus">loading...</div>
+
+<div class="tabs">
+  <button class="tbtn on"  onclick="switchTab('sessions',this)">📋 Sessions</button>
+  <button class="tbtn" onclick="switchTab('daily',this)">🌤 Daily Feel</button>
+  <button class="tbtn" onclick="switchTab('contacts',this)">🤝 Contacts</button>
+  <button class="tbtn" onclick="switchTab('eod',this)">📧 End of Day</button>
+  <button class="tbtn" onclick="switchTab('linkedin',this)">💼 LinkedIn</button>
+</div>
+
+<div class="main">
+
+<!-- ─── SESSIONS ─────────────────────────────────── -->
+<div id="tab-sessions" class="tc on">
+  <div id="day1wrap">
+    <div class="statrow">
+      <div class="statpill">Day 1 · Builders Day</div>
+      <div class="statpill">Notes saved: <b id="nd1">0</b></div>
+    </div>
+    <div id="d1-morning-label" class="slabel">Morning</div>
+    <div class="slist" id="d1-morning"></div>
+    <div id="d1-afternoon-label" class="slabel">Afternoon</div>
+    <div class="slist" id="d1-afternoon"></div>
+    <div id="d1-evening-label" class="slabel">Evening</div>
+    <div class="slist" id="d1-evening"></div>
+  </div>
+  <div id="day2wrap" style="display:none">
+    <div class="statrow">
+      <div class="statpill">Day 2 · Innovation Day</div>
+      <div class="statpill">Notes saved: <b id="nd2">0</b></div>
+    </div>
+    <div id="d2-morning-label" class="slabel">Morning</div>
+    <div class="slist" id="d2-morning"></div>
+    <div id="d2-afternoon-label" class="slabel">Afternoon</div>
+    <div class="slist" id="d2-afternoon"></div>
+  </div>
+</div>
+
+<!-- ─── DAILY FEEL ───────────────────────────────── -->
+<div id="tab-daily" class="tc">
+  <div class="feelsec">
+    <div class="feeltitle">🌤 How's the day going?</div>
+    <div class="feelsubt">Quick check-in — feeds into your end-of-day email to Craig.</div>
+    <div class="fgrp">
+      <div class="flabel">Overall Vibe</div>
+      <div class="moodrow">
+        <button class="mbtn" onclick="pickMood(this)">🔥 Energised</button>
+        <button class="mbtn" onclick="pickMood(this)">😊 Good</button>
+        <button class="mbtn" onclick="pickMood(this)">😐 Okay</button>
+        <button class="mbtn" onclick="pickMood(this)">😴 Tired</button>
+        <button class="mbtn" onclick="pickMood(this)">🤯 Overwhelmed</button>
+      </div>
+    </div>
+    <div class="fgrp" style="margin-top:12px">
+      <div class="flabel">Personal Highlight</div>
+      <textarea class="bd" id="feel-hi" placeholder="Something that made you smile, surprised you, or just felt good — a conversation, a moment, anything."></textarea>
+    </div>
+    <div class="fgrp" style="margin-top:10px">
+      <div class="flabel">Anything Unexpected?</div>
+      <textarea class="bd" id="feel-un" style="min-height:55px" placeholder="A random conversation, a surprise demo, an unexpected connection..."></textarea>
+    </div>
+    <div class="fgrp" style="margin-top:10px" id="feel-tom-wrap">
+      <div class="flabel">Looking Forward to Tomorrow?</div>
+      <textarea class="bd" id="feel-tom" style="min-height:55px" placeholder="Sessions, things to explore, people you want to find..."></textarea>
+    </div>
+    <div style="margin-top:14px">
+      <button class="savebtn" onclick="saveFeel()">Save ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── CONTACTS ─────────────────────────────────── -->
+<div id="tab-contacts" class="tc">
+  <div class="slabel">People You've Met</div>
+  <div class="cgrid" id="clist"><div class="empty"><div class="emptyicon">🤝</div>Add your first contact below</div></div>
+  <div class="slabel" style="margin-top:18px">Add a Contact</div>
+  <div class="addcform">
+    <div class="fgrid">
+      <input class="fi" id="cn" placeholder="Name">
+      <input class="fi" id="cc" placeholder="Company / Role">
+      <input class="fi" id="cli" placeholder="LinkedIn (optional)">
+      <input class="fi" id="ce" placeholder="Email (optional)">
+      <input class="fi full" id="ctx" placeholder="What did you talk about?">
+      <input class="fi full" id="cfu" placeholder="Follow-up action">
+    </div>
+    <button class="savebtn" onclick="addContact()">Add Contact ✓</button>
+  </div>
+</div>
+
+<!-- ─── END OF DAY ───────────────────────────────── -->
+<div id="tab-eod" class="tc">
+  <div class="stc-wrap">
+    <div class="stc-title">📤 Send to Claude — End of Day</div>
+    <div class="stc-sub">Copies all your notes to clipboard. Paste into a new Claude message and ask me to write your email to Craig — I'll have the full picture and can refine it with you.</div>
+    <button class="stcbtn" onclick="sendToClaude('eod')">Copy Notes for Claude ✓</button>
+  </div>
+  <div class="panel">
+    <div class="ptitle">📧 Quick Generate Email</div>
+    <div class="psubt">Or generate a draft here directly — no back-and-forth, just a quick starting point.</div>
+    <div class="inrow">
+      <div><div class="flabel">Your name</div><input class="fi" id="yourname" value="Chris"></div>
+      <div><div class="flabel">Boss's name</div><input class="fi" id="bossname" value="Craig"></div>
+    </div>
+    <button class="genbtn" onclick="genEOD()">
+      <span id="eod-bt">✨ Generate Email Draft</span>
+      <div class="dots" id="eod-ld" style="display:none"><span></span><span></span><span></span></div>
+    </button>
+    <div class="outarea" id="eod-out"></div>
+    <button class="cpbtn" id="eod-cp" onclick="copyOut('eod-out','eod-cp')">Copy to clipboard</button>
+  </div>
+</div>
+
+<!-- ─── LINKEDIN ─────────────────────────────────── -->
+<div id="tab-linkedin" class="tc">
+  <div class="stc-wrap">
+    <div class="stc-title">📤 Send to Claude — LinkedIn</div>
+    <div class="stc-sub">Copies everything to clipboard. Paste into Claude and we'll craft your post together — I can write a few versions in different tones and you pick what feels right.</div>
+    <button class="stcbtn" onclick="sendToClaude('linkedin')">Copy Notes for Claude ✓</button>
+  </div>
+  <div class="panel">
+    <div class="ptitle">💼 Quick Generate Post</div>
+    <div class="psubt">Your first LinkedIn post — no corporate fluff. I'll write something that sounds like a real person attended a real event.</div>
+    <div class="fgrp" style="margin-bottom:12px">
+      <div class="flabel">Tone</div>
+      <div class="chips" id="li-tones">
+        <div class="chip" onclick="this.classList.toggle('on')">Reflective</div>
+        <div class="chip" onclick="this.classList.toggle('on')">Energetic</div>
+        <div class="chip on" onclick="this.classList.toggle('on')">Conversational</div>
+        <div class="chip" onclick="this.classList.toggle('on')">Concise</div>
+      </div>
+    </div>
+    <div class="fgrp" style="margin-bottom:12px">
+      <div class="flabel">Anything specific to highlight?</div>
+      <textarea class="bd" id="li-hi" style="min-height:60px" placeholder="Leave blank to let me pick the best bits from your notes..."></textarea>
+    </div>
+    <button class="genbtn" onclick="genLinkedIn()">
+      <span id="li-bt">✨ Generate LinkedIn Post</span>
+      <div class="dots" id="li-ld" style="display:none"><span></span><span></span><span></span></div>
+    </button>
+    <div class="outarea" id="li-out"></div>
+    <button class="cpbtn" id="li-cp" onclick="copyOut('li-out','li-cp')">Copy to clipboard</button>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<script>
+// ═══════════════════════════════════════════════════
+// SCHEDULE DATA
+// ═══════════════════════════════════════════════════
+const SCHEDULE = {
+  d1: {
+    morning: [
+      {id:'d1_arrive',  time:'08:00', code:'—',       name:'Arrive & collect badge',             sub:'Bring e-Ticket + photo ID',                      loc:'Registration desk', priority:'essential', tags:[], cats:[]},
+      {id:'d1_expo1',   time:'08:00', code:'—',       name:'Explore expo',                       sub:'Locate Industries Zone & Ask an Expert',          loc:'Expo floor',        priority:'flexible',  tags:[], cats:[], alt:true},
+      {id:'d1_key',     time:'09:00', code:'KEY001',  name:'Builders Day Keynote',               sub:'',                                               loc:'Main stage',        priority:'essential', tags:['t-key'], cats:['AWS Announcements','Agentic AI','Inspiration','Architecture','Strategy']},
+      {id:'d1_prt109',  time:'11:00', code:'PRT109-S',name:'Hello Future, Meet Reality: Enterprise AI Lessons', sub:'Versent',                        loc:'Breakout room',     priority:'essential', tags:['t-prt'], cats:['Agentic AI','Enterprise AI','Lessons Learned','Strategy']},
+      {id:'d1_aim201',  time:'11:45', code:'AIM201',  name:"From demo to deployment: solving agentic AI's toughest challenges", sub:'',              loc:'Breakout room',     priority:'high',      tags:['t-ai'],  cats:['Agentic AI','Deployment','Architecture','Production AI']},
+      {id:'d1_arc301',  time:'11:45', code:'ARC301',  name:'Build an AI-ready data foundation',  sub:'Alt to AIM201 — stretch session',                loc:'Breakout room',     priority:'high',      tags:['t-arc'], cats:['Architecture','Data','AI Readiness'], alt:true},
+      {id:'d1_ant301',  time:'11:45', code:'ANT301',  name:"A practitioner's guide to data for agentic AI", sub:'Alt to AIM201',                      loc:'Breakout room',     priority:'high',      tags:['t-ai'],  cats:['Agentic AI','Data','Practitioner Guide'], alt:true},
+    ],
+    afternoon: [
+      {id:'d1_lunch',   time:'12:15', code:'—',       name:'Lunch + AWS Industries Zone',        sub:'Manufacturing / Mining / Energy pod',             loc:'Expo floor',        priority:'flexible',  tags:[], cats:[]},
+      {id:'d1_mam301',  time:'12:30', code:'MAM301',  name:'From tech debt to competitive advantage: Migrate & modernise', sub:'Alt to lunch',         loc:'Breakout room',     priority:'medium',    tags:['t-arc'], cats:['Migration','Modernisation','Tech Debt'], alt:true},
+      {id:'d1_prt102',  time:'13:45', code:'PRT102-S',name:'Efficiency to Innovation: How Agentic AI Unlocks New Business Models', sub:'AWS + Accenture', loc:'Breakout room',  priority:'essential', tags:['t-prt','t-ai'], cats:['Agentic AI','Business Models','Innovation','Strategy']},
+      {id:'d1_tnc202',  time:'14:30', code:'TNC202',  name:'Accelerate Your Cloud Journey with AWS Transform', sub:'',                                 loc:'Breakout room',     priority:'essential', tags:[], cats:['Cloud Journey','AWS Transform','Migration','Strategy']},
+      {id:'d1_aim203',  time:'14:55', code:'AIM203',  name:"Woodside Agentic Ecosystem",         sub:"Reserve — Prompt Engineering to Learning Systems. Swap if TNC202/COP302 don't appeal", loc:'Breakout room', priority:'high', tags:['t-ai'], cats:['Agentic AI','Energy Industry','Real Deployment','Prompt Engineering'], alt:true},
+      {id:'d1_cop302',  time:'15:15', code:'COP302',  name:'Applying AI for FinOps and FinOps for AI', sub:'',                                         loc:'Breakout room',     priority:'high',      tags:['t-fin'], cats:['FinOps','AI Cost Management','Cloud Finance']},
+      {id:'d1_expert',  time:'15:15', code:'—',       name:'Ask an Expert — 1:1 with AWS architect', sub:'Alt to COP302',                              loc:'Expo floor',        priority:'flexible',  tags:[], cats:[], alt:true},
+      {id:'d1_tnc101',  time:'16:00', code:'TNC101',  name:'Exam Prep: AWS Certified AI Practitioner', sub:'',                                         loc:'Breakout room',     priority:'medium',    tags:[], cats:['Certification','AI Practitioner','Exam Prep']},
+      {id:'d1_builders',time:'16:00', code:'—',       name:'Builders Lab — self-paced hands-on', sub:'Alt to TNC101',                                  loc:'Expo floor',        priority:'flexible',  tags:[], cats:[], alt:true},
+    ],
+    evening: [
+      {id:'d1_drinks',  time:'17:15', code:'—',       name:'Networking Drinks',                  sub:'',                                               loc:'Venue',             priority:'essential', tags:['t-net'], cats:['Networking']},
+    ]
+  },
+  d2: {
+    morning: [
+      {id:'d2_arrive',  time:'08:00', code:'—',       name:'Arrive early — register for AI League Workshop', sub:'Register at AI League Arena first',  loc:'AI League Arena',   priority:'essential', tags:[], cats:[]},
+      {id:'d2_expo',    time:'08:00', code:'—',       name:'AWS Industries Zone return visit',   sub:'',                                               loc:'Expo floor',        priority:'flexible',  tags:[], cats:[], alt:true},
+      {id:'d2_key',     time:'09:00', code:'—',       name:'Innovation Day Keynote',             sub:'',                                               loc:'Main stage',        priority:'essential', tags:['t-key'], cats:['AWS Announcements','Agentic AI','Industry Transformation','Inspiration','Strategy']},
+      {id:'d2_prt107',  time:'10:30', code:'PRT107-S',name:'From Reactive to Preventative – The Path to Autonomous Operations', sub:'',               loc:'Breakout room',     priority:'high',      tags:['t-prt'], cats:['Autonomous Operations','AI Automation','Industry']},
+      {id:'d2_mae203',  time:'10:30', code:'MAE203',  name:'27x Faster: How Service Stream Automated Work Order Verification', sub:'Alt to PRT107-S — note: runs to 11:00, plan to leave at 10:55', loc:'Breakout room', priority:'high', tags:['t-ind'], cats:['Automation','AI Use Case','Customer Story'], alt:true},
+      {id:'d2_aim101',  time:'10:30', code:'AIM101',  name:'AI League Workshop: Building Intelligent AI Agents with Amazon Bedrock AgentCore', sub:'Runs 10:30–12:30 — the centrepiece of Day 2', loc:'AI League Arena', priority:'essential', tags:['t-ai','t-wkp'], cats:['Amazon Bedrock','AgentCore','Agentic AI','Hands-On','Workshop']},
+    ],
+    afternoon: [
+      {id:'d2_lunch',   time:'12:30', code:'—',       name:'Lunch + Ask an Expert',              sub:'High value networking opportunity',               loc:'Expo floor',        priority:'flexible',  tags:[], cats:[]},
+      {id:'d2_ino203',  time:'13:30', code:'INO203',  name:"Behind the curtain: How Amazon's AI innovations are powered by AWS", sub:'',              loc:'Breakout room',     priority:'high',      tags:['t-ai'], cats:["Amazon's AI","AWS Infrastructure","Innovation","Inside Amazon"]},
+      {id:'d2_tnc204',  time:'13:30', code:'TNC204',  name:'Exam Prep: AWS Solutions Architect Associate', sub:'Alt to INO203',                        loc:'Breakout room',     priority:'medium',    tags:[], cats:['Certification','Solutions Architect','Exam Prep'], alt:true},
+      {id:'d2_wps204',  time:'14:00', code:'WPS204',  name:"Safe Transport Victoria's Migration to AWS Cloud", sub:'',                                 loc:'Workshop room',     priority:'high',      tags:['t-wkp','t-ind'], cats:['Migration','Public Sector','Case Study','Workshop']},
+      {id:'d2_ind206',  time:'15:00', code:'IND206',  name:'How scalable data foundations helped TGE unlock the power of AI', sub:'',                  loc:'Breakout room',     priority:'high',      tags:['t-ind'], cats:['Data Foundation','AI Enablement','Case Study','Industry']},
+      {id:'d2_gameshow',time:'15:30', code:'—',       name:'AI League: Agentic AI Gameshow',     sub:'If you completed AIM101',                        loc:'AI League Arena',   priority:'medium',    tags:['t-ai'], cats:['Agentic AI','Fun','Gameshow']},
+      {id:'d2_smb203',  time:'15:30', code:'SMB203',  name:'From Vision AI to Agentic AI: Real-Time Ops & Compliance', sub:'Alt — Fingermark',        loc:'Breakout room',     priority:'medium',    tags:['t-ai'], cats:['Vision AI','Agentic AI','Compliance','Customer Story'], alt:true},
+      {id:'d2_end',     time:'16:30', code:'—',       name:'Event concludes',                    sub:'Follow up LinkedIn connections within 48 hrs',   loc:'—',                 priority:'essential', tags:[], cats:[]},
+    ]
+  }
+};
+
+const PRIORITY_LABELS = {essential:'✅ Essential', high:'🔵 High', medium:'🟡 Medium', flexible:'⬜ Flexible'};
+const PRIORITY_CLASSES = {essential:'p-essential pb-e', high:'p-high pb-h', medium:'p-medium pb-m', flexible:'p-flexible pb-f'};
+
+// ═══════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════
+let notes = {};
+let contacts = [];
+let feel = {mood:'', hi:'', un:'', tom:''};
+let currentDay = 1;
+
+// ═══════════════════════════════════════════════════
+// STORAGE
+// ═══════════════════════════════════════════════════
+const STORAGE_KEY = 'aws_summit_sydney_2026';
+
+function loadState() {
+  loadLocal();
+  renderAll();
+  try {
+    if (window.storage && typeof window.storage.get === 'function') {
+      var p = window.storage.get(STORAGE_KEY);
+      var t = new Promise(function(_, rej) { setTimeout(function() { rej('timeout'); }, 1500); });
+      Promise.race([p, t]).then(function(result) {
+        if (result && result.value) {
+          var saved = JSON.parse(result.value);
+          notes = saved.notes || {};
+          contacts = saved.contacts || [];
+          feel = saved.feel || {mood:'',hi:'',un:'',tom:''};
+          renderAll();
+          setStatus('Notes loaded', true);
+        }
+      }).catch(function() {});
+    }
+  } catch(e) {}
+}
+
+function loadLocal() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const saved = JSON.parse(raw);
+      notes = saved.notes || {};
+      contacts = saved.contacts || [];
+      feel = saved.feel || {mood:'',hi:'',un:'',tom:''};
+      setStatus('✓ Notes restored', true);
+    } else {
+      setStatus('New session', false);
+    }
+  } catch(e) {
+    setStatus('Ready', false);
+  }
+}
+
+async function saveState() {
+  // Try window.storage first (Claude artifact), fallback to localStorage (standalone file)
+  try {
+    if (window.storage && typeof window.storage.set === "function") {
+      await window.storage.set(STORAGE_KEY, JSON.stringify({notes, contacts, feel}));
+    } else {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({notes, contacts, feel}));
+    }
+    setStatus('✓ Saved', true);
+  } catch(e) {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({notes, contacts, feel})); setStatus('✓ Saved', true); } catch(e2) { setStatus('Save failed', false); }
+  }
+}
+
+function setStatus(msg, ok) {
+  const el = document.getElementById('sstatus');
+  el.textContent = msg;
+  el.className = 'sstatus' + (ok?' ok':'');
+  if (ok) setTimeout(()=>{el.textContent='';}, 3000);
+}
+
+// ═══════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════
+function renderAll() {
+  renderDay('d1', 'morning');
+  renderDay('d1', 'afternoon');
+  renderDay('d1', 'evening');
+  renderDay('d2', 'morning');
+  renderDay('d2', 'afternoon');
+  updateCounts();
+  renderContacts();
+  restoreFeel();
+}
+
+function renderDay(day, slot) {
+  const sessions = SCHEDULE[day][slot] || [];
+  const container = document.getElementById(`${day}-${slot}`);
+  if (!container) return;
+  container.innerHTML = '';
+  sessions.forEach(s => {
+    container.insertAdjacentHTML('beforeend', buildCard(s) + buildEditor(s));
+  });
+  // restore note states
+  sessions.forEach(s => {
+    if (notes[s.id]?.saved) {
+      const dot = document.getElementById('dot-'+s.id);
+      const card = document.getElementById('card-'+s.id);
+      if (dot) dot.classList.add('saved');
+      if (card) card.classList.add('has-notes');
+      restoreNoteToEditor(s.id);
+    }
+  });
+}
+
+function buildCard(s) {
+  const pClass = PRIORITY_CLASSES[s.priority].split(' ')[0];
+  const pbClass = PRIORITY_CLASSES[s.priority].split(' ')[1];
+  const tagMap = {'t-key':'KEYNOTE','t-ai':'AI','t-arc':'ARCHITECTURE','t-wkp':'WORKSHOP','t-prt':'PARTNER','t-net':'NETWORKING','t-fin':'FINOPS','t-ind':'INDUSTRY'};
+  const tagsWithLabels = s.tags.map(t=>`<span class="stag ${t}">${tagMap[t]||t}</span>`).join('');
+  const subHtml = s.sub ? `<div class="cdet" style="font-size:11px;color:var(--tm);margin-top:2px">${s.sub}</div>` : '';
+  return `
+<div class="scard ${pClass}${s.alt?' is-alt':''}" id="card-${s.id}" onclick="toggleEd('${s.id}')">
+  <div class="stime">${s.time}</div>
+  <div class="sinfo">
+    ${s.code!=='—'?`<div class="scode">${s.code}</div>`:''}
+    <div class="sname${s.alt?' alt-name':''}">${s.alt?'↳ '+s.name:s.name}</div>
+    ${subHtml}
+    <div class="smeta">
+      ${tagsWithLabels}
+      <span class="pbadge ${pbClass}">${PRIORITY_LABELS[s.priority]}</span>
+      <span class="sloc">${s.loc}</span>
+    </div>
+  </div>
+  <div class="sdot" id="dot-${s.id}"></div>
+</div>`;
+}
+
+function buildEditor(s) {
+  const cats = s.cats.length ? s.cats : ['General','Key Insight','Action Item','Follow Up'];
+  const catsHtml = cats.map(c=>`<div class="chip" data-cat="${c}" onclick="this.classList.toggle('on')">${c}</div>`).join('');
+  const safeId = s.id;
+  return `
+<div id="ed-${safeId}" style="display:none">
+  <div class="editor">
+    <div class="eh">
+      <div class="ename">${s.name}</div>
+      <button class="ecls" onclick="event.stopPropagation();closeEd('${safeId}')">×</button>
+    </div>
+    <div class="ebody">
+      <div class="fgrp">
+        <div class="flabel">Session Rating</div>
+        <div class="stars" id="stars-${safeId}">
+          ${[1,2,3,4,5].map(i=>`<span class="star" onclick="setRating('${safeId}',${i})">★</span>`).join('')}
+        </div>
+      </div>
+      <div class="fgrp">
+        <div class="flabel">Categories</div>
+        <div class="chips" id="chips-${safeId}">${catsHtml}</div>
+      </div>
+      <div class="fgrp">
+        <div class="flabel">Key Takeaways</div>
+        <div class="tklist">
+          <div class="tkrow"><div class="tkn">1</div><textarea class="tki" id="tk1-${safeId}" placeholder="Most important thing..."></textarea></div>
+          <div class="tkrow"><div class="tkn">2</div><textarea class="tki" id="tk2-${safeId}" placeholder="Second insight..."></textarea></div>
+          <div class="tkrow"><div class="tkn">3</div><textarea class="tki" id="tk3-${safeId}" placeholder="Third insight..."></textarea></div>
+        </div>
+      </div>
+      <div class="fgrp">
+        <div class="flabel">Brain Dump</div>
+        <textarea class="bd" id="bd-${safeId}" placeholder="Fragments, quotes, reactions, random thoughts — just type. Don't worry about structure."></textarea>
+      </div>
+      <div class="fgrp">
+        <div class="flabel">Action Items</div>
+        <div class="alist" id="al-${safeId}">
+          <div class="arow"><input type="checkbox" class="acb"><input class="ai" placeholder="Something to follow up..."></div>
+        </div>
+        <button class="addbtn" onclick="addAction('${safeId}')">+ Add action item</button>
+      </div>
+      <button class="savebtn" onclick="saveNote('${safeId}')">Save Notes ✓</button>
+    </div>
+  </div>
+</div>`;
+}
+
+// ═══════════════════════════════════════════════════
+// EDITOR INTERACTIONS
+// ═══════════════════════════════════════════════════
+function toggleEd(id) {
+  const ed = document.getElementById('ed-'+id);
+  const card = document.getElementById('card-'+id);
+  const isOpen = ed.style.display !== 'none';
+  document.querySelectorAll('[id^="ed-"]').forEach(e=>e.style.display='none');
+  document.querySelectorAll('.scard').forEach(c=>c.classList.remove('open'));
+  if (!isOpen) {
+    ed.style.display = 'block';
+    card.classList.add('open');
+    setTimeout(()=>ed.scrollIntoView({behavior:'smooth',block:'nearest'}),60);
+  }
+}
+
+function closeEd(id) {
+  document.getElementById('ed-'+id).style.display='none';
+  document.getElementById('card-'+id).classList.remove('open');
+}
+
+function setRating(id, val) {
+  document.querySelectorAll(`#stars-${id} .star`).forEach((s,i)=>s.classList.toggle('on',i<val));
+  if(!notes[id]) notes[id]={};
+  notes[id].rating = val;
+}
+
+function addAction(id) {
+  const list = document.getElementById('al-'+id);
+  const row = document.createElement('div');
+  row.className='arow';
+  row.innerHTML=`<input type="checkbox" class="acb"><input class="ai" placeholder="Follow-up..."><button class="rmbtn" onclick="this.parentElement.remove()">×</button>`;
+  list.appendChild(row);
+}
+
+function saveNote(id) {
+  const sessionData = Object.values(SCHEDULE).flatMap(day =>
+    Object.values(day).flat()
+  ).find(s => s.id === id);
+  const name = sessionData ? sessionData.name : id;
+  const tks = [1,2,3].map(n=>document.getElementById(`tk${n}-${id}`)?.value||'').filter(Boolean);
+  const bd = document.getElementById(`bd-${id}`)?.value||'';
+  const chips = [...document.querySelectorAll(`#chips-${id} .chip.on`)].map(c=>c.textContent);
+  const actions = [...document.querySelectorAll(`#al-${id} .ai`)].map(a=>a.value).filter(Boolean);
+  const rating = notes[id]?.rating||0;
+  notes[id] = {name, tks, bd, chips, actions, rating, saved:true, ts: new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'})};
+  document.getElementById('dot-'+id)?.classList.add('saved');
+  document.getElementById('card-'+id)?.classList.add('has-notes');
+  updateCounts();
+  saveState();
+  const btn = document.querySelector(`#ed-${id} .savebtn`);
+  if(btn){btn.textContent='Saved! ✓';btn.style.background=`var(--green)`;btn.style.color='#000';setTimeout(()=>{btn.textContent='Save Notes ✓';btn.style.background='';btn.style.color='';},2000);}
+}
+
+function restoreNoteToEditor(id) {
+  const n = notes[id];
+  if (!n) return;
+  if (n.rating) document.querySelectorAll(`#stars-${id} .star`).forEach((s,i)=>s.classList.toggle('on',i<n.rating));
+  if (n.chips) n.chips.forEach(c=>{
+    const chip = [...document.querySelectorAll(`#chips-${id} .chip`)].find(el=>el.textContent===c);
+    if(chip) chip.classList.add('on');
+  });
+  if (n.tks) n.tks.forEach((t,i)=>{ const el=document.getElementById(`tk${i+1}-${id}`); if(el) el.value=t; });
+  if (n.bd) { const el=document.getElementById(`bd-${id}`); if(el) el.value=n.bd; }
+  if (n.actions?.length) {
+    const list = document.getElementById(`al-${id}`);
+    if(list){ list.innerHTML=''; n.actions.forEach(a=>{ const row=document.createElement('div'); row.className='arow'; row.innerHTML=`<input type="checkbox" class="acb"><input class="ai" value="${a.replace(/"/g,'&quot;')}"><button class="rmbtn" onclick="this.parentElement.remove()">×</button>`; list.appendChild(row); }); }
+  }
+}
+
+function updateCounts() {
+  const allD1 = [...SCHEDULE.d1.morning,...SCHEDULE.d1.afternoon,...SCHEDULE.d1.evening];
+  const allD2 = [...SCHEDULE.d2.morning,...SCHEDULE.d2.afternoon];
+  document.getElementById('nd1').textContent = allD1.filter(s=>notes[s.id]?.saved).length;
+  document.getElementById('nd2').textContent = allD2.filter(s=>notes[s.id]?.saved).length;
+}
+
+// ═══════════════════════════════════════════════════
+// DAY / TAB
+// ═══════════════════════════════════════════════════
+function switchDay(d) {
+  currentDay = d;
+  document.querySelectorAll('.dbtn').forEach((b,i)=>b.classList.toggle('on',i+1===d));
+  document.getElementById('day1wrap').style.display = d===1?'block':'none';
+  document.getElementById('day2wrap').style.display = d===2?'block':'none';
+  document.getElementById('feel-tom-wrap').style.display = d===2?'none':'block';
+}
+
+function switchTab(tab, btn) {
+  document.querySelectorAll('.tbtn').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('.tc').forEach(c=>c.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('tab-'+tab).classList.add('on');
+}
+
+// ═══════════════════════════════════════════════════
+// DAILY FEEL
+// ═══════════════════════════════════════════════════
+function pickMood(el) {
+  document.querySelectorAll('.mbtn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  feel.mood = el.textContent;
+}
+
+function saveFeel() {
+  feel.hi = document.getElementById('feel-hi')?.value||'';
+  feel.un = document.getElementById('feel-un')?.value||'';
+  feel.tom = document.getElementById('feel-tom')?.value||'';
+  saveState();
+  const btn = event.target;
+  btn.textContent='Saved! ✓';btn.style.background=`var(--green)`;btn.style.color='#000';
+  setTimeout(()=>{btn.textContent='Save ✓';btn.style.background='';btn.style.color='';},2000);
+}
+
+function restoreFeel() {
+  if(feel.mood) { const mb=[...document.querySelectorAll('.mbtn')].find(b=>b.textContent===feel.mood); if(mb)mb.classList.add('on'); }
+  ['hi','un','tom'].forEach(k=>{ const el=document.getElementById('feel-'+k); if(el&&feel[k]) el.value=feel[k]; });
+}
+
+// ═══════════════════════════════════════════════════
+// CONTACTS
+// ═══════════════════════════════════════════════════
+function addContact() {
+  const name = document.getElementById('cn').value.trim();
+  if(!name) return;
+  contacts.push({name, company:document.getElementById('cc').value.trim(), linkedin:document.getElementById('cli').value.trim(), email:document.getElementById('ce').value.trim(), context:document.getElementById('ctx').value.trim(), followup:document.getElementById('cfu').value.trim()});
+  saveState();
+  renderContacts();
+  ['cn','cc','cli','ce','ctx','cfu'].forEach(id=>document.getElementById(id).value='');
+}
+
+function renderContacts() {
+  const el = document.getElementById('clist');
+  if(!contacts.length){el.innerHTML='<div class="empty"><div class="emptyicon">🤝</div>Add your first contact below</div>';return;}
+  el.innerHTML = contacts.map((c,i)=>`
+    <div class="ccard">
+      <div class="cav">${c.name.charAt(0).toUpperCase()}</div>
+      <div class="cinfo">
+        <div class="cname">${c.name}</div>
+        ${c.company?`<div class="cdet">${c.company}</div>`:''}
+        ${c.context?`<div class="cdet" style="margin-top:3px;color:var(--ts)">${c.context}</div>`:''}
+        ${c.followup?`<div class="cfu">→ ${c.followup}</div>`:''}
+        ${c.linkedin?`<div class="cdet" style="margin-top:2px;color:var(--teal)">LinkedIn: ${c.linkedin}</div>`:''}
+      </div>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════
+// GATHER ALL DATA
+// ═══════════════════════════════════════════════════
+function gatherAllNotes() {
+  const allSessions = [
+    ...SCHEDULE.d1.morning,...SCHEDULE.d1.afternoon,...SCHEDULE.d1.evening,
+    ...SCHEDULE.d2.morning,...SCHEDULE.d2.afternoon
+  ];
+  const saved = allSessions.filter(s=>notes[s.id]?.saved);
+  if(!saved.length) return '(No notes saved yet)';
+  return saved.map(s=>{
+    const n = notes[s.id];
+    let t = `SESSION: ${s.name}${s.code!=='—'?' ['+s.code+']':''} (${s.time})\n`;
+    if(n.rating) t+=`Rating: ${n.rating}/5\n`;
+    if(n.chips?.length) t+=`Topics: ${n.chips.join(', ')}\n`;
+    if(n.tks?.length) t+=`Takeaways:\n${n.tks.map((tk,i)=>`  ${i+1}. ${tk}`).join('\n')}\n`;
+    if(n.bd) t+=`Notes: ${n.bd}\n`;
+    if(n.actions?.length) t+=`Actions: ${n.actions.join(' | ')}\n`;
+    return t;
+  }).join('\n---\n');
+}
+
+function gatherSummary(mode) {
+  const d = currentDay;
+  const dayLabel = d===1?'Day 1 (Builders Day, 13 May 2026)':'Day 2 (Innovation Day, 14 May 2026)';
+  let txt = `AWS SUMMIT SYDNEY — ${dayLabel}\nFrom: Chris\n\n`;
+  txt += `=== SESSION NOTES ===\n${gatherAllNotes()}\n\n`;
+  txt += `=== DAILY FEEL ===\n`;
+  if(feel.mood) txt+=`Mood: ${feel.mood}\n`;
+  if(feel.hi) txt+=`Highlight: ${feel.hi}\n`;
+  if(feel.un) txt+=`Unexpected: ${feel.un}\n`;
+  if(d===1&&feel.tom) txt+=`Tomorrow: ${feel.tom}\n`;
+  txt+='\n';
+  if(contacts.length) {
+    txt+=`=== CONTACTS MET ===\n`;
+    contacts.forEach(c=>{ txt+=`${c.name}${c.company?' — '+c.company:''}${c.context?'\n  Context: '+c.context:''}${c.followup?'\n  Follow-up: '+c.followup:''}\n`; });
+  }
+  if(mode==='eod') txt+=`\n=== REQUEST ===\nPlease write my end-of-day summary email to Craig based on the above.\n`;
+  if(mode==='linkedin') txt+=`\n=== REQUEST ===\nPlease draft my LinkedIn post based on the above (this is my first ever LinkedIn post — keep it human and genuine).\n`;
+  return txt;
+}
+
+// ═══════════════════════════════════════════════════
+// SEND TO CLAUDE
+// ═══════════════════════════════════════════════════
+function sendToClaude(mode) {
+  const txt = gatherSummary(mode);
+  navigator.clipboard.writeText(txt).then(()=>{
+    const btn = event.target;
+    btn.textContent='Copied! Open a new Claude message and paste ✓';
+    setTimeout(()=>btn.textContent='Copy Notes for Claude ✓',3000);
+  }).catch(()=>{
+    // fallback: select and copy
+    const ta = document.createElement('textarea');
+    ta.value = txt; ta.style.cssText='position:fixed;left:-9999px';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta);
+    const btn = event.target;
+    btn.textContent='Copied! ✓';
+    setTimeout(()=>btn.textContent='Copy Notes for Claude ✓',2500);
+  });
+}
+
+// ═══════════════════════════════════════════════════
+// QUICK GENERATE (in-app)
+// ═══════════════════════════════════════════════════
+async function genEOD() {
+  const boss = document.getElementById('bossname').value.trim()||'Craig';
+  const me = document.getElementById('yourname').value.trim()||'Chris';
+  const d = currentDay;
+  const dayLabel = d===1?'Day 1 – Builders Day (13 May)':'Day 2 – Innovation Day (14 May)';
+  setLoading('eod',true);
+  const prompt=`Write a warm, genuine end-of-day email from ${me} to ${boss} after attending AWS Summit Sydney, ${dayLabel}.
+
+${gatherSummary('none')}
+
+Guidelines:
+- Open with 2-3 sentences that feel personal — Chris's energy, how the day went, something human
+- 2-3 key insights or things learned, relevant to work
+- Mention any valuable contacts if present
+- ${d===1?'End with a line about what\'s coming up on Innovation Day tomorrow':'Brief reflection on the full two-day event and any clear next steps'}
+- Subject line included
+- ~220 words, warm and direct — sounds like a person not a PR release`;
+  await callClaude(prompt,'eod-out','eod-cp');
+  setLoading('eod',false);
+}
+
+async function genLinkedIn() {
+  const tones = [...document.querySelectorAll('#li-tones .chip.on')].map(c=>c.textContent);
+  const tone = tones.length?tones.join(' + '):'conversational and human';
+  const hi = document.getElementById('li-hi').value.trim();
+  setLoading('li',true);
+  const prompt=`Write a LinkedIn post for Chris's very first post ever, after attending AWS Summit Sydney 2026 (13-14 May).
+
+${gatherSummary('none')}
+
+${hi?`Chris specifically wants to highlight: ${hi}`:''}
+Tone: ${tone}
+
+Rules:
+- This is genuinely Chris's first LinkedIn post — human, not corporate
+- Pick 2-3 real moments or insights from the notes
+- 150-200 words
+- Don't open with "I attended..." or "Just got back from..."
+- 3-4 relevant hashtags at end
+- Something a real person would actually post and feel good about
+
+Write just the post — no intro or explanation.`;
+  await callClaude(prompt,'li-out','li-cp');
+  setLoading('li',false);
+}
+
+async function callClaude(prompt, outId, cpId) {
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key': window.ANTHROPIC_API_KEY||'','anthropic-version':'2023-06-01','anthropic-dangerous-allow-browser':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
+    const data = await res.json();
+    const text = data.content?.map(b=>b.text||'').join('')||'Could not generate content.';
+    document.getElementById(outId).textContent=text;
+    document.getElementById(outId).classList.add('show');
+    document.getElementById(cpId).classList.add('show');
+  } catch(e) {
+    document.getElementById(outId).textContent='Error. Please try the "Copy Notes for Claude" option above instead.';
+    document.getElementById(outId).classList.add('show');
+  }
+}
+
+function setLoading(p, on) {
+  document.getElementById(`${p}-bt`).style.display=on?'none':'inline';
+  document.getElementById(`${p}-ld`).style.display=on?'flex':'none';
+}
+
+function copyOut(outId, cpId) {
+  navigator.clipboard.writeText(document.getElementById(outId).textContent).then(()=>{
+    const btn=document.getElementById(cpId);
+    btn.textContent='Copied! ✓';
+    setTimeout(()=>btn.textContent='Copy to clipboard',2000);
+  });
+}
+
+// ═══════════════════════════════════════════════════
+// BOOT
+// ═══════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', loadState);
+</script>
+</body>
+</html>
